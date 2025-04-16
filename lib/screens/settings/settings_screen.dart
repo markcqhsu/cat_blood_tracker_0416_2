@@ -121,48 +121,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
             )),
             const SizedBox(height: 32),
             const Text('Chart Limit Ranges', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Row(
+            const SizedBox(height: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Lower Limit'),
-                    onChanged: (val) => _tempLower = double.tryParse(val) ?? 0,
-                  ),
+                Row(
+                  children: [
+                    const Expanded(child: Text('Lower Limit')),
+                    const SizedBox(width: 8),
+                    const Expanded(child: Text('Upper Limit')),
+                  ],
                 ),
-                const SizedBox(width: 4),
-                DropdownButton<Color>(
-                  value: _tempLowerColor,
-                  onChanged: (color) => setState(() => _tempLowerColor = color!),
-                  items: _availableColors.map((color) => DropdownMenuItem(
-                    value: color,
-                    child: Container(width: 24, height: 24, color: color),
-                  )).toList(),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Upper Limit'),
-                    onChanged: (val) => _tempUpper = double.tryParse(val) ?? 0,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                DropdownButton<Color>(
-                  value: _tempUpperColor,
-                  onChanged: (color) => setState(() => _tempUpperColor = color!),
-                  items: _availableColors.map((color) => DropdownMenuItem(
-                    value: color,
-                    child: Container(width: 24, height: 24, color: color),
-                  )).toList(),
-                ),
-                IconButton(
-                  onPressed: _addLimitRange,
-                  icon: const Icon(Icons.add),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          hintText: 'e.g. 80',
+                        ),
+                        onChanged: (val) => _tempLower = double.tryParse(val) ?? 0,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    DropdownButton<Color>(
+                      value: _tempLowerColor,
+                      onChanged: (color) => setState(() => _tempLowerColor = color!),
+                      items: _availableColors.map((color) => DropdownMenuItem(
+                        value: color,
+                        child: Container(width: 24, height: 24, color: color),
+                      )).toList(),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          hintText: 'e.g. 180',
+                        ),
+                        onChanged: (val) => _tempUpper = double.tryParse(val) ?? 0,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    DropdownButton<Color>(
+                      value: _tempUpperColor,
+                      onChanged: (color) => setState(() => _tempUpperColor = color!),
+                      items: _availableColors.map((color) => DropdownMenuItem(
+                        value: color,
+                        child: Container(width: 24, height: 24, color: color),
+                      )).toList(),
+                    ),
+                    IconButton(
+                      onPressed: _addLimitRange,
+                      icon: const Icon(Icons.add),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
             ...settings.limitRanges.map((range) => Card(
               child: ListTile(
                 title: Text('Range: ${range['lower']} - ${range['upper']}'),

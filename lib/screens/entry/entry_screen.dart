@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/glucose_entry.dart';
@@ -61,6 +62,7 @@ class _EntryScreenState extends State<EntryScreen> {
       if (bg == null) return;
 
       final entry = GlucoseEntry(
+        id: _editingEntry?.id,
         dateTime: _selectedDateTime,
         bloodGlucose: bg,
         insulinDose: _insulinValue,
@@ -92,6 +94,10 @@ class _EntryScreenState extends State<EntryScreen> {
       if (mounted && Navigator.canPop(context)) {
         Navigator.of(context).pop();
       }
+
+      _bgController.clear();
+      _weightController.clear();
+      setState(() => _insulinValue = 0);
     }
   }
 
@@ -133,6 +139,16 @@ class _EntryScreenState extends State<EntryScreen> {
         pickedTime.hour,
         pickedTime.minute,
       );
+    });
+  }
+
+  void _loadEntryForEdit(GlucoseEntry entry) {
+    setState(() {
+      _editingEntry = entry;
+      _selectedDateTime = entry.dateTime;
+      _bgController.text = entry.bloodGlucose.toString();
+      _insulinValue = entry.insulinDose;
+      _weightController.text = entry.weight?.toString() ?? '';
     });
   }
 
@@ -202,7 +218,8 @@ class _EntryScreenState extends State<EntryScreen> {
                       children: [
                         TextFormField(
                           controller: _bgController,
-                          keyboardType: TextInputType.number,
+                          keyboardType: TextInputType.numberWithOptions(decimal: true),
+                          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
                           decoration: const InputDecoration(
                             labelText: 'Blood Glucose (mg/dL)',
                           ),
@@ -227,7 +244,8 @@ class _EntryScreenState extends State<EntryScreen> {
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _weightController,
-                          keyboardType: TextInputType.number,
+                          keyboardType: TextInputType.numberWithOptions(decimal: true),
+                          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
                           decoration: const InputDecoration(
                             labelText: 'Cat Weight (kg)',
                           ),
@@ -260,14 +278,37 @@ class _EntryScreenState extends State<EntryScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               if (latestEntries.isNotEmpty)
-                ...latestEntries.take(3).map((entry) => Card(
-                      child: ListTile(
-                        title: Text(
-                          DateFormat('yyyy/MM/dd HH:mm')
-                              .format(entry.dateTime),
-                        ),
-                        subtitle: Text(
-                          'BG: ${entry.bloodGlucose} • Insulin: ${entry.insulinDose} • Weight: ${entry.weight?.toStringAsFixed(1) ?? '-'}',
+                ...latestEntries.take(3).map((entry) => InkWell(
+                      onTap: () async {
+                        final shouldEdit = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Edit Entry'),
+                            content: const Text('Do you want to edit this entry?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(true),
+                                child: const Text('Edit'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (shouldEdit == true) {
+                          _loadEntryForEdit(entry);
+                        }
+                      },
+                      child: Card(
+                        child: ListTile(
+                          title: Text(
+                            DateFormat('yyyy/MM/dd HH:mm').format(entry.dateTime),
+                          ),
+                          subtitle: Text(
+                            'BG: ${entry.bloodGlucose} • Insulin: ${entry.insulinDose} • Weight: ${entry.weight?.toStringAsFixed(1) ?? '-'}',
+                          ),
                         ),
                       ),
                     ))
