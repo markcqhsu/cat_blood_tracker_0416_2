@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:csv/csv.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/cat_provider.dart';
+import 'dart:io';
+import 'dart:convert';
+import '../../providers/entry_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -17,7 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _comparison = '<';
   String _newCatName = '';
 
-  List<Map<String, dynamic>> _limitRanges = [];
+  final List<Map<String, dynamic>> _limitRanges = [];
 
   final _availableColors = <Color>[Colors.green, Colors.orange, Colors.red, Colors.blue, Colors.purple];
 
@@ -232,6 +237,93 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
             )),
+            const SizedBox(height: 32),
+            const Text('Backup & Export', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.backup),
+                  label: const Text('Backup Locally'),
+                  onPressed: () {
+                    // TODO: Implement local backup functionality
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Local backup initiated')));
+                  },
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.file_download),
+                  label: const Text('Export CSV'),
+                  onPressed: () async {
+                    try {
+                      final entries = context.read<EntryProvider>().entries;
+                      final rows = [
+                        ['Date', 'Blood Glucose', 'Insulin Dose', 'Weight', 'Cat ID']
+                      ];
+                      for (final e in entries) {
+                        rows.add([
+                          e.dateTime.toIso8601String(),
+                          e.bloodGlucose.toString(),
+                          e.insulinDose.toString(),
+                          e.weight?.toString() ?? '',
+                          e.catID.toString(),
+                        ]);
+                      }
+
+                      final csvString = const ListToCsvConverter().convert(rows);
+
+                      final result = await FilePicker.platform.getDirectoryPath();
+
+                      if (result != null) {
+                        final outputPath = '$result/dm_export.csv';
+                        final file = File(outputPath);
+                        await file.parent.create(recursive: true); // ensure the directory exists
+                        await file.writeAsBytes(utf8.encode(csvString)); // write as bytes
+
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('CSV exported to $outputPath')),
+                        );
+                      } else {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Export cancelled')),
+                        );
+                      }
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('CSV export failed: $e')),
+                      );
+                    }
+                  },
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.file_copy),
+                  label: const Text('Export JSON'),
+                  onPressed: () {
+                    // TODO: Implement JSON export
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('JSON export started')));
+                  },
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.picture_as_pdf),
+                  label: const Text('Export PDF'),
+                  onPressed: () {
+                    // TODO: Implement PDF export
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PDF export started')));
+                  },
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.table_chart),
+                  label: const Text('Export Excel'),
+                  onPressed: () {
+                    // TODO: Implement Excel export
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Excel export started')));
+                  },
+                ),
+              ],
+            ),
           ],
         ),
       ),

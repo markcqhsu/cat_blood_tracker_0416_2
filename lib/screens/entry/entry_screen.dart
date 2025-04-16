@@ -63,7 +63,22 @@ class _EntryScreenState extends State<EntryScreen> {
       if (bg == null) return;
 
       final selectedCat = context.read<CatProvider>().selectedCat;
-      if (selectedCat == null) return;
+      if (selectedCat == null) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Missing Information'),
+            content: const Text('Please select a cat.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
 
       final entry = GlucoseEntry(
         id: _editingEntry?.id,
@@ -181,7 +196,7 @@ class _EntryScreenState extends State<EntryScreen> {
           padding: EdgeInsets.only(
             left: 16,
             right: 16,
-          top: 32,
+            top: 16,
             bottom: 32,
           ),
           child: Column(
