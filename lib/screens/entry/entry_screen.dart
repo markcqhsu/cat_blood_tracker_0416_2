@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../models/glucose_entry.dart';
 import '../../providers/entry_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../providers/cat_provider.dart';
 
 class EntryScreen extends StatefulWidget {
   final GlucoseEntry? entryToEdit;
@@ -61,12 +62,16 @@ class _EntryScreenState extends State<EntryScreen> {
       final weight = double.tryParse(_weightController.text);
       if (bg == null) return;
 
+      final selectedCat = context.read<CatProvider>().selectedCat;
+      if (selectedCat == null) return;
+
       final entry = GlucoseEntry(
         id: _editingEntry?.id,
         dateTime: _selectedDateTime,
         bloodGlucose: bg,
         insulinDose: _insulinValue,
         weight: weight,
+        catID: selectedCat.id,
       );
 
       final provider = Provider.of<EntryProvider>(context, listen: false);
@@ -159,6 +164,10 @@ class _EntryScreenState extends State<EntryScreen> {
       context.watch<EntryProvider>().entries,
     )..sort((a, b) => b.dateTime.compareTo(a.dateTime));
 
+    final catProvider = context.watch<CatProvider>();
+    final selectedCat = catProvider.selectedCat;
+    final cats = catProvider.cats;
+
     return Scaffold(
       appBar: AppBar(
         title: _editingEntry != null ? const Text('Edit Entry') : null,
@@ -172,12 +181,36 @@ class _EntryScreenState extends State<EntryScreen> {
           padding: EdgeInsets.only(
             left: 16,
             right: 16,
-            top: screenHeight * 0.12,
+          top: 32,
             bottom: 32,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Center(
+                child: Text(
+                  'DM Tracker',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedCat?.id,
+                onChanged: (catId) {
+                  final selected = cats.firstWhere((cat) => cat.id == catId);
+                  context.read<CatProvider>().selectCat(selected);
+                },
+                decoration: const InputDecoration(labelText: 'Select Cat'),
+                items: cats.map((cat) => DropdownMenuItem(
+                  value: cat.id,
+                  child: Text(cat.name),
+                )).toList(),
+                validator: (value) => value == null || value.isEmpty ? 'Please select a cat' : null,
+              ),
+              const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

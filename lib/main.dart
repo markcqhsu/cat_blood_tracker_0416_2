@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'app.dart';
 import 'providers/entry_provider.dart';
 import 'providers/settings_provider.dart';
-// import 'package:cat_blood_tracker_0416/providers/settings_provider.dart';
+import 'providers/cat_provider.dart';
 
 void main() {
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -14,6 +14,7 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => CatProvider()),
         ChangeNotifierProvider(create: (_) => EntryProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],

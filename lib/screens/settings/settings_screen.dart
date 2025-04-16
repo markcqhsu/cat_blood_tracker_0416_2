@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../providers/cat_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -14,6 +15,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   double _bgEnd = 0;
   double _insulinAmount = 0;
   String _comparison = '<';
+  String _newCatName = '';
 
   List<Map<String, dynamic>> _limitRanges = [];
 
@@ -69,6 +71,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Text('Manage Cats', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: const InputDecoration(labelText: 'Cat Name'),
+                    onChanged: (val) => setState(() => _newCatName = val),
+                  ),
+                ),
+                IconButton(
+                  onPressed: _newCatName.trim().isEmpty ? null : () {
+                    context.read<CatProvider>().addCat(_newCatName.trim());
+                    setState(() => _newCatName = '');
+                  },
+                  icon: const Icon(Icons.add),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ...context.watch<CatProvider>().cats.map((cat) => ListTile(
+              title: Text(cat.name),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () => context.read<CatProvider>().removeCat(cat),
+              ),
+            )),
+            const SizedBox(height: 24),
             const Text('Auto Insulin Rules', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Row(
               children: [

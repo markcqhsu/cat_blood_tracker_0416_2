@@ -6,6 +6,7 @@ class GlucoseEntry {
   final int bloodGlucose;
   final double insulinDose;
   final double? weight;
+  final String catID;
 
   GlucoseEntry({
     String? id,
@@ -13,6 +14,7 @@ class GlucoseEntry {
     required this.bloodGlucose,
     required this.insulinDose,
     this.weight,
+    required this.catID,
   }) : id = id ?? const Uuid().v4();
 
   factory GlucoseEntry.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class GlucoseEntry {
       bloodGlucose: json['bloodGlucose'],
       insulinDose: json['insulinDose'].toDouble(),
       weight: json['weight'] != null ? (json['weight'] as num).toDouble() : null,
+      catID: json['catID'],
     );
   }
 
@@ -32,6 +35,7 @@ class GlucoseEntry {
       'bloodGlucose': bloodGlucose,
       'insulinDose': insulinDose,
       'weight': weight,
+      'catID': catID,
     };
   }
 }
