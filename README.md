@@ -1,6 +1,6 @@
 # cat_blood_tracker_0416
 
-A new Flutter project.
+This program was developed entirely by ChatGPT, with the hope that it can assist fellow cat owners who are managing feline diabetes.
 
 ## Getting Started
 
