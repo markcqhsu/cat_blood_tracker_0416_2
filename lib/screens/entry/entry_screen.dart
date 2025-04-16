@@ -126,10 +126,11 @@ class _EntryScreenState extends State<EntryScreen> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final latestEntries = context.watch<EntryProvider>().entries.take(3).toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_editingEntry != null ? 'Edit Entry' : 'New Entry'),
+        title: _editingEntry != null ? const Text('Edit Entry') : null,
         actions: [
           if (_editingEntry != null)
             IconButton(
@@ -219,6 +220,14 @@ class _EntryScreenState extends State<EntryScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
+              const Text('Latest 3 Entries', style: TextStyle(fontWeight: FontWeight.bold)),
+              ...latestEntries.map((entry) => Card(
+                    child: ListTile(
+                      title: Text(DateFormat('yyyy/MM/dd HH:mm').format(entry.dateTime)),
+                      subtitle: Text('BG: ${entry.bloodGlucose} • Insulin: ${entry.insulinDose} • Weight: ${entry.weight ?? '-'}'),
+                    ),
+                  ))
             ],
           ),
         ),
