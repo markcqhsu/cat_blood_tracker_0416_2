@@ -58,7 +58,6 @@ class _EntryScreenState extends State<EntryScreen> {
     if (_formKey.currentState!.validate()) {
       final bg = int.tryParse(_bgController.text);
       final weight = double.tryParse(_weightController.text);
-
       if (bg == null) return;
 
       final entry = GlucoseEntry(
@@ -70,7 +69,7 @@ class _EntryScreenState extends State<EntryScreen> {
 
       final provider = Provider.of<EntryProvider>(context, listen: false);
       if (_editingEntry != null) {
-        provider.updateEntry(_editingEntry!, entry);
+        provider.updateEntry(entry);
       } else {
         provider.addEntry(entry);
       }
@@ -79,26 +78,40 @@ class _EntryScreenState extends State<EntryScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_editingEntry != null ? 'Entry updated!' : 'Entry saved successfully!')),
+        SnackBar(
+          content: Text(
+            _editingEntry != null
+                ? 'Entry updated!'
+                : 'Entry saved successfully!',
+          ),
+        ),
       );
 
-      Navigator.of(context).pop();
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (!mounted) return;
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
-  void _deleteEntry() {
+  void _deleteEntry() async {
     if (_editingEntry != null) {
       final provider = Provider.of<EntryProvider>(context, listen: false);
       provider.deleteEntry(_editingEntry!);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Entry deleted.')),
       );
-      Navigator.of(context).pop();
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (!mounted) return;
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
   Future<void> _pickDateTime() async {
-    final DateTime? pickedDate = await showDatePicker(
+    final pickedDate = await showDatePicker(
       context: context,
       initialDate: _selectedDateTime,
       firstDate: DateTime(2020),
@@ -106,7 +119,7 @@ class _EntryScreenState extends State<EntryScreen> {
     );
     if (pickedDate == null) return;
 
-    final TimeOfDay? pickedTime = await showTimePicker(
+    final pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
     );
@@ -126,17 +139,16 @@ class _EntryScreenState extends State<EntryScreen> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final latestEntries = context.watch<EntryProvider>().entries.take(3).toList();
+    final latestEntries = List<GlucoseEntry>.from(
+      context.watch<EntryProvider>().entries,
+    )..sort((a, b) => b.dateTime.compareTo(a.dateTime));
 
     return Scaffold(
       appBar: AppBar(
         title: _editingEntry != null ? const Text('Edit Entry') : null,
         actions: [
           if (_editingEntry != null)
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: _deleteEntry,
-            )
+            IconButton(icon: const Icon(Icons.delete), onPressed: _deleteEntry),
         ],
       ),
       body: SingleChildScrollView(
@@ -155,7 +167,10 @@ class _EntryScreenState extends State<EntryScreen> {
                 children: [
                   Text(
                     DateFormat('yyyy/MM/dd HH:mm').format(_selectedDateTime),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   ElevatedButton.icon(
                     onPressed: _pickDateTime,
@@ -164,7 +179,10 @@ class _EntryScreenState extends State<EntryScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal.shade600,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       textStyle: const TextStyle(fontSize: 14),
                     ),
                   ),
@@ -173,7 +191,9 @@ class _EntryScreenState extends State<EntryScreen> {
               const SizedBox(height: 16),
               Card(
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Form(
@@ -183,14 +203,20 @@ class _EntryScreenState extends State<EntryScreen> {
                         TextFormField(
                           controller: _bgController,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'Blood Glucose (mg/dL)'),
-                          validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                          decoration: const InputDecoration(
+                            labelText: 'Blood Glucose (mg/dL)',
+                          ),
+                          validator: (value) =>
+                              value == null || value.isEmpty ? 'Required' : null,
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<double>(
                           value: _insulinValue,
-                          onChanged: (value) => setState(() => _insulinValue = value ?? 0),
-                          decoration: const InputDecoration(labelText: 'Insulin Dose (units)'),
+                          onChanged: (value) =>
+                              setState(() => _insulinValue = value ?? 0),
+                          decoration: const InputDecoration(
+                            labelText: 'Insulin Dose (units)',
+                          ),
                           items: List.generate(21, (i) => (i * 0.25)).map((dose) {
                             return DropdownMenuItem(
                               value: dose,
@@ -202,7 +228,9 @@ class _EntryScreenState extends State<EntryScreen> {
                         TextFormField(
                           controller: _weightController,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'Cat Weight (kg)'),
+                          decoration: const InputDecoration(
+                            labelText: 'Cat Weight (kg)',
+                          ),
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
@@ -211,9 +239,15 @@ class _EntryScreenState extends State<EntryScreen> {
                             minimumSize: const Size.fromHeight(45),
                             backgroundColor: Colors.teal.shade600,
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                          child: Text(_editingEntry != null ? 'Update Entry' : 'Save Entry'),
+                          child: Text(
+                            _editingEntry != null
+                                ? 'Update Entry'
+                                : 'Save Entry',
+                          ),
                         ),
                       ],
                     ),
@@ -221,13 +255,24 @@ class _EntryScreenState extends State<EntryScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text('Latest 3 Entries', style: TextStyle(fontWeight: FontWeight.bold)),
-              ...latestEntries.map((entry) => Card(
-                    child: ListTile(
-                      title: Text(DateFormat('yyyy/MM/dd HH:mm').format(entry.dateTime)),
-                      subtitle: Text('BG: ${entry.bloodGlucose} • Insulin: ${entry.insulinDose} • Weight: ${entry.weight ?? '-'}'),
-                    ),
-                  ))
+              const Text(
+                'Latest 3 Entries',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              if (latestEntries.isNotEmpty)
+                ...latestEntries.take(3).map((entry) => Card(
+                      child: ListTile(
+                        title: Text(
+                          DateFormat('yyyy/MM/dd HH:mm')
+                              .format(entry.dateTime),
+                        ),
+                        subtitle: Text(
+                          'BG: ${entry.bloodGlucose} • Insulin: ${entry.insulinDose} • Weight: ${entry.weight?.toStringAsFixed(1) ?? '-'}',
+                        ),
+                      ),
+                    ))
+              else
+                const Text('No recent entries.'),
             ],
           ),
         ),

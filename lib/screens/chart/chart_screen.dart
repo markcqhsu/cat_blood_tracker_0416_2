@@ -158,30 +158,32 @@ class _ChartScreenState extends State<ChartScreen> {
                       ],
                       extraLinesData: ExtraLinesData(
                         horizontalLines: [
-                          HorizontalLine(
-                            y: settings.lowerLimit,
-                            color: Colors.green,
-                            strokeWidth: 2,
-                            dashArray: [8, 4],
-                            label: HorizontalLineLabel(
-                              show: true,
-                              alignment: Alignment.bottomLeft,
-                              labelResolver: (_) => 'Lower Limit',
-                              style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                          for (var range in settings.limitRanges) ...[
+                            HorizontalLine(
+                              y: range['lower'],
+                              color: range['lowerColor'],
+                              strokeWidth: 2,
+                              dashArray: [8, 4],
+                              label: HorizontalLineLabel(
+                                show: true,
+                                alignment: Alignment.bottomLeft,
+                                labelResolver: (_) => 'Lower ${range['lower']}',
+                                style: TextStyle(color: range['lowerColor'], fontWeight: FontWeight.bold),
+                              ),
                             ),
-                          ),
-                          HorizontalLine(
-                            y: settings.upperLimit,
-                            color: Colors.red,
-                            strokeWidth: 2,
-                            dashArray: [8, 4],
-                            label: HorizontalLineLabel(
-                              show: true,
-                              alignment: Alignment.topLeft,
-                              labelResolver: (_) => 'Upper Limit',
-                              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                            HorizontalLine(
+                              y: range['upper'],
+                              color: range['upperColor'],
+                              strokeWidth: 2,
+                              dashArray: [8, 4],
+                              label: HorizontalLineLabel(
+                                show: true,
+                                alignment: Alignment.topLeft,
+                                labelResolver: (_) => 'Upper ${range['upper']}',
+                                style: TextStyle(color: range['upperColor'], fontWeight: FontWeight.bold),
+                              ),
                             ),
-                          ),
+                          ]
                         ],
                       ),
                       gridData: FlGridData(show: true),

@@ -10,27 +10,21 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  double _lower = 0;
-  double _upper = 0;
-  Color _selectedColor = Colors.green;
-
   double _bgStart = 0;
   double _bgEnd = 0;
   double _insulinAmount = 0;
   String _comparison = '<';
 
+  List<Map<String, dynamic>> _limitRanges = [];
+
   final _availableColors = <Color>[Colors.green, Colors.orange, Colors.red, Colors.blue, Colors.purple];
 
-  void _addColorRange() {
-    if (_lower >= 0 && _upper > _lower) {
-      final settings = context.read<SettingsProvider>();
-      settings.addColorRange(_lower, _upper, _selectedColor.value.toRadixString(16));
-      setState(() {
-        _lower = 0;
-        _upper = 0;
-      });
-    }
-  }
+  // Optionally add persistence later
+
+  double _tempLower = 0;
+  double _tempUpper = 0;
+  Color _tempLowerColor = Colors.green;
+  Color _tempUpperColor = Colors.red;
 
   void _addInsulinRule() {
     final settings = context.read<SettingsProvider>();
@@ -48,6 +42,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  void _addLimitRange() {
+    final settings = context.read<SettingsProvider>();
+    settings.addLimitRange(
+      lower: _tempLower,
+      upper: _tempUpper,
+      lowerColor: _tempLowerColor,
+      upperColor: _tempUpperColor,
+    );
+    setState(() {
+      _tempLower = 0;
+      _tempUpper = 0;
+      _tempLowerColor = Colors.green;
+      _tempUpperColor = Colors.red;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
@@ -59,55 +69,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Blood Glucose Color Ranges', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Lower'),
-                    onChanged: (val) => _lower = double.tryParse(val) ?? 0,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Upper'),
-                    onChanged: (val) => _upper = double.tryParse(val) ?? 0,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                DropdownButton<Color>(
-                  value: _selectedColor,
-                  onChanged: (color) => setState(() => _selectedColor = color!),
-                  items: _availableColors.map((color) => DropdownMenuItem(
-                    value: color,
-                    child: Container(width: 24, height: 24, color: color),
-                  )).toList(),
-                ),
-                IconButton(
-                  onPressed: _addColorRange,
-                  icon: const Icon(Icons.add),
-                )
-              ],
-            ),
-            const SizedBox(height: 10),
-            ...settings.colorRanges.map((r) => ListTile(
-              title: Text('BG: ${r["start"]} - ${r["end"]}'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(width: 20, height: 20, color: Color(int.parse(r['color'], radix: 16))),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => settings.removeColorRange(r),
-                  ),
-                ],
-              ),
-            )),
-            const Divider(height: 32),
             const Text('Auto Insulin Rules', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Row(
               children: [
@@ -156,6 +117,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
               trailing: IconButton(
                 icon: const Icon(Icons.delete),
                 onPressed: () => settings.removeInsulinRule(r),
+              ),
+            )),
+            const SizedBox(height: 32),
+            const Text('Chart Limit Ranges', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Lower Limit'),
+                    onChanged: (val) => _tempLower = double.tryParse(val) ?? 0,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                DropdownButton<Color>(
+                  value: _tempLowerColor,
+                  onChanged: (color) => setState(() => _tempLowerColor = color!),
+                  items: _availableColors.map((color) => DropdownMenuItem(
+                    value: color,
+                    child: Container(width: 24, height: 24, color: color),
+                  )).toList(),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Upper Limit'),
+                    onChanged: (val) => _tempUpper = double.tryParse(val) ?? 0,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                DropdownButton<Color>(
+                  value: _tempUpperColor,
+                  onChanged: (color) => setState(() => _tempUpperColor = color!),
+                  items: _availableColors.map((color) => DropdownMenuItem(
+                    value: color,
+                    child: Container(width: 24, height: 24, color: color),
+                  )).toList(),
+                ),
+                IconButton(
+                  onPressed: _addLimitRange,
+                  icon: const Icon(Icons.add),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ...settings.limitRanges.map((range) => Card(
+              child: ListTile(
+                title: Text('Range: ${range['lower']} - ${range['upper']}'),
+                subtitle: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text('Lower:', style: TextStyle(fontSize: 12)),
+                    const SizedBox(width: 4),
+                    Container(width: 20, height: 20, color: range['lowerColor']),
+                    const SizedBox(width: 16),
+                    const Text('Upper:', style: TextStyle(fontSize: 12)),
+                    const SizedBox(width: 4),
+                    Container(width: 20, height: 20, color: range['upperColor']),
+                  ],
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () => settings.removeLimitRange(range),
+                ),
               ),
             )),
           ],
