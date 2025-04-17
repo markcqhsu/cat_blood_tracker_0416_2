@@ -116,6 +116,10 @@ class _ChartScreenState extends State<ChartScreen> {
                   padding: const EdgeInsets.only(left: 12), // 讓左邊的文字有空間
                   child: LineChart(
                     LineChartData(
+                      minX: 0,
+                      maxX: (spots.length - 1).toDouble(),
+                      minY: 0,
+                      maxY: spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) + 20,
                       titlesData: FlTitlesData(
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(

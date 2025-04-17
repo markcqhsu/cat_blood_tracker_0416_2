@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../models/cat_profile.dart';
 import '../../providers/entry_provider.dart';
+import '../../providers/cat_provider.dart' as cp;
 import '../../models/glucose_entry.dart';
 import '../entry/entry_screen.dart';
 
@@ -17,6 +19,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   final List<String> _ranges = ['All', '7 days', '30 days', 'Custom'];
   DateTime? _startDate;
   DateTime? _endDate;
+  String? _selectedCatId;
 
   bool _inRange(DateTime time) {
     if (_selectedRange == '7 days') {
@@ -83,8 +86,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final catProvider = context.watch<cp.CatProvider>();
+    final cats = catProvider.cats;
     final allEntries = context.watch<EntryProvider>().entries;
-    final entries = allEntries.where((e) => _inRange(e.dateTime)).toList();
+    final entries = allEntries
+        .where((e) => _inRange(e.dateTime) && (_selectedCatId == null || e.catID == _selectedCatId))
+        .toList();
 
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -101,28 +108,66 @@ class _HistoryScreenState extends State<HistoryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Center(
+                child: Text(
+                  'History',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  DropdownButton<String>(
+                  const Text('Cat'),
+                  const SizedBox(height: 4),
+                  DropdownButtonFormField<String?>(
+                    value: _selectedCatId,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                    hint: const Text('All'),
+                    items: [
+                      const DropdownMenuItem(value: null, child: Text('All')),
+                      ...cats.map((cat) => DropdownMenuItem(
+                        value: cat.id,
+                        child: Text(cat.name),
+                      )),
+                    ],
+                    onChanged: (value) => setState(() => _selectedCatId = value),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Time'),
+                  const SizedBox(height: 4),
+                  DropdownButtonFormField<String>(
                     value: _selectedRange,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
                     items: _ranges.map((r) {
                       return DropdownMenuItem(
                         value: r,
                         child: Text(r),
                       );
                     }).toList(),
-                    onChanged: (value) async {
-                      if (value != null) {
-                        if (value == 'Custom') {
-                          await _selectCustomDateRange();
-                        }
-                        setState(() => _selectedRange = value);
+                  onChanged: (value) async {
+                    if (value != null) {
+                      if (value == 'Custom') {
+                        await _selectCustomDateRange();
+                        if (_startDate == null || _endDate == null) return;
                       }
-                    },
+                      setState(() {
+                        _selectedRange = value;
+                      });
+                    }
+                  },
                   ),
                   if (_selectedRange == 'Custom' && _startDate != null && _endDate != null)
-                    Text('${DateFormat('MM/dd').format(_startDate!)} - ${DateFormat('MM/dd').format(_endDate!)}')
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text('${DateFormat('MM/dd').format(_startDate!)} - ${DateFormat('MM/dd').format(_endDate!)}'),
+                    ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -145,7 +190,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         elevation: 1,
                         margin: const EdgeInsets.symmetric(vertical: 6),
                         child: ListTile(
-                          title: Text(DateFormat('yyyy/MM/dd HH:mm').format(entry.dateTime)),
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                cats.firstWhere((c) => c.id == entry.catID, orElse: () => CatProfile(id: '', name: 'Unknown')).name,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Text(DateFormat('yyyy/MM/dd HH:mm').format(entry.dateTime)),
+                            ],
+                          ),
                           subtitle: Text('BG: ${entry.bloodGlucose} • Insulin: ${entry.insulinDose} • Weight: ${entry.weight ?? '-'}'),
                           trailing: IconButton(
                             icon: const Icon(Icons.edit),

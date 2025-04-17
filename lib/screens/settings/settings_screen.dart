@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 // Removed unused provider import
-import '../../providers/settings_provider.dart';
-import '../../providers/cat_provider.dart';
-import '../../providers/entry_provider.dart';
+// import '../../providers/settings_provider.dart';
+// import '../../providers/cat_provider.dart';
+// import '../../providers/entry_provider.dart';
 import 'package:cat_blood_tracker_0416/screens/settings/pet_settings_screen.dart';
 import 'package:cat_blood_tracker_0416/screens/settings/insulin_settings_screen.dart';
 import 'package:cat_blood_tracker_0416/screens/settings/chart_settings_screen.dart';

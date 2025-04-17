@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// import '../../providers/cat_provider.dart';
 import '../../providers/cat_provider.dart';
-import '../../models/cat.dart';
+import '../../models/cat_profile.dart';
 
 class PetSettingsScreen extends StatefulWidget {
   @override
@@ -23,16 +22,16 @@ class _PetSettingsScreenState extends State<PetSettingsScreen> {
         // Update existing cat
         final selectedCat = catProvider.selectedCat!;
         selectedCat.name = _nameController.text;
-        selectedCat.weight = double.parse(_weightController.text);
-        selectedCat.age = int.parse(_ageController.text);
+        selectedCat.weight = _weightController.text.isEmpty ? 0.0 : double.tryParse(_weightController.text) ?? 0.0;
+        selectedCat.age = _ageController.text.isEmpty ? 0 : int.tryParse(_ageController.text) ?? 0;
         catProvider.updateCat(selectedCat);
       } else {
         // Add new cat
         final newCat = CatProfile(
           id: UniqueKey().toString(),
           name: _nameController.text,
-          weight: double.parse(_weightController.text),
-          age: int.parse(_ageController.text),
+          weight: _weightController.text.isEmpty ? 0.0 : double.tryParse(_weightController.text) ?? 0.0,
+          age: _ageController.text.isEmpty ? 0 : int.tryParse(_ageController.text) ?? 0,
         );
         catProvider.addCat(newCat);
       }
@@ -78,7 +77,11 @@ class _PetSettingsScreenState extends State<PetSettingsScreen> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
-                validator: (value) => value == null || value.isEmpty ? 'Please enter weight' : null,
+                validator: (value) {
+                  if (value == null || value.isEmpty) return null;
+                  final parsed = double.tryParse(value);
+                  return parsed == null ? 'Invalid weight' : null;
+                },
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -88,7 +91,11 @@ class _PetSettingsScreenState extends State<PetSettingsScreen> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
-                validator: (value) => value == null || value.isEmpty ? 'Please enter age' : null,
+                validator: (value) {
+                  if (value == null || value.isEmpty) return null;
+                  final parsed = int.tryParse(value);
+                  return parsed == null ? 'Invalid age' : null;
+                },
               ),
               const SizedBox(height: 32),
               ElevatedButton(

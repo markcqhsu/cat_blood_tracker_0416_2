@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import '../../models/glucose_entry.dart';
 import '../../providers/entry_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../models/insulin_rule.dart';
 import '../../providers/cat_provider.dart';
+// import '../../models/cat.dart';
 
 class EntryScreen extends StatefulWidget {
   final GlucoseEntry? entryToEdit;
@@ -41,9 +43,15 @@ class _EntryScreenState extends State<EntryScreen> {
     final bg = int.tryParse(_bgController.text);
     if (bg != null) {
       final settings = context.read<SettingsProvider>();
-      final autoDose = settings.getAutoInsulinDose(bg);
-      if (autoDose != null && autoDose != _insulinValue) {
-        setState(() => _insulinValue = autoDose);
+      final List<InsulinRule> rules = settings.insulinRules.map((e) => InsulinRule.fromJson(e)).toList();
+      for (final InsulinRule rule in rules) {
+        if ((rule.comparison == 'less' && bg < rule.glucose) ||
+            (rule.comparison == 'greater' && bg > rule.glucose)) {
+          if (_insulinValue != rule.insulin.toDouble()) {
+            setState(() => _insulinValue = rule.insulin.toDouble());
+          }
+          return;
+        }
       }
     }
   }
@@ -121,46 +129,46 @@ class _EntryScreenState extends State<EntryScreen> {
     }
   }
 
-  void _deleteEntry() async {
-    if (_editingEntry != null) {
-      final provider = Provider.of<EntryProvider>(context, listen: false);
-      provider.deleteEntry(_editingEntry!);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Entry deleted.')),
-      );
-      await Future.delayed(const Duration(milliseconds: 200));
-      if (!mounted) return;
-      if (mounted && Navigator.canPop(context)) {
-        Navigator.of(context).pop();
-      }
-    }
-  }
+  // void _deleteEntry() async {
+  //   if (_editingEntry != null) {
+  //     final provider = Provider.of<EntryProvider>(context, listen: false);
+  //     provider.deleteEntry(_editingEntry!);
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Entry deleted.')),
+  //     );
+  //     await Future.delayed(const Duration(milliseconds: 200));
+  //     if (!mounted) return;
+  //     if (mounted && Navigator.canPop(context)) {
+  //       Navigator.of(context).pop();
+  //     }
+  //   }
+  // }
 
-  Future<void> _pickDateTime() async {
-    final pickedDate = await showDatePicker(
-      context: context,
-      initialDate: _selectedDateTime,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
-    );
-    if (pickedDate == null) return;
+  // Future<void> _pickDateTime() async {
+  //   final pickedDate = await showDatePicker(
+  //     context: context,
+  //     initialDate: _selectedDateTime,
+  //     firstDate: DateTime(2020),
+  //     lastDate: DateTime(2100),
+  //   );
+  //   if (pickedDate == null) return;
 
-    final pickedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
-    );
-    if (pickedTime == null) return;
+  //   final pickedTime = await showTimePicker(
+  //     context: context,
+  //     initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
+  //   );
+  //   if (!mounted || pickedTime == null) return;
 
-    setState(() {
-      _selectedDateTime = DateTime(
-        pickedDate.year,
-        pickedDate.month,
-        pickedDate.day,
-        pickedTime.hour,
-        pickedTime.minute,
-      );
-    });
-  }
+  //   setState(() {
+  //     _selectedDateTime = DateTime(
+  //       pickedDate.year,
+  //       pickedDate.month,
+  //       pickedDate.day,
+  //       pickedTime.hour,
+  //       pickedTime.minute,
+  //     );
+  //   });
+  // }
 
   void _loadEntryForEdit(GlucoseEntry entry) {
     setState(() {
@@ -174,14 +182,15 @@ class _EntryScreenState extends State<EntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final latestEntries = List<GlucoseEntry>.from(
-      context.watch<EntryProvider>().entries,
-    )..sort((a, b) => b.dateTime.compareTo(a.dateTime));
-
     final catProvider = context.watch<CatProvider>();
     final selectedCat = catProvider.selectedCat;
     final cats = catProvider.cats;
+    // final screenHeight = MediaQuery.of(context).size.height;
+    final latestEntries = context.watch<EntryProvider>().entries
+        .where((entry) => entry.catID == selectedCat?.id)
+        .where((entry) => entry.dateTime.isAfter(DateTime.now().subtract(Duration(days: 7))))
+        .toList()
+      ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
 
     return Scaffold(
       appBar: AppBar(
@@ -382,8 +391,17 @@ class _EntryScreenState extends State<EntryScreen> {
                       },
                       child: Card(
                         child: ListTile(
-                          title: Text(
-                            DateFormat('yyyy/MM/dd HH:mm').format(entry.dateTime),
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                cats.firstWhere((c) => c.id == entry.catID).name,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                DateFormat('yyyy/MM/dd HH:mm').format(entry.dateTime),
+                              ),
+                            ],
                           ),
                           subtitle: Text(
                             'BG: ${entry.bloodGlucose} • Insulin: ${entry.insulinDose} • Weight: ${entry.weight?.toStringAsFixed(1) ?? '-'}',

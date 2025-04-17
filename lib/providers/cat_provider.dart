@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
-import 'package:cat_blood_tracker_0416/models/cat.dart';
+import '../models/cat_profile.dart';
 
-class CatProvider extends ChangeNotifier {
-  final List<CatProfile> _cats = [];
-  CatProfile? _selectedCat;
+class CatProvider with ChangeNotifier {
+  List<CatProfile> _cats = [];
+  CatProfile? selectedCat;
 
   List<CatProfile> get cats => _cats;
-  CatProfile? get selectedCat => _selectedCat;
 
   void addCat(CatProfile cat) {
     _cats.add(cat);
@@ -22,13 +20,41 @@ class CatProvider extends ChangeNotifier {
     }
   }
 
-  void removeCat(CatProfile cat) {
+  void deleteCat(CatProfile cat) {
     _cats.removeWhere((c) => c.id == cat.id);
     notifyListeners();
   }
 
   void selectCat(CatProfile? cat) {
-    _selectedCat = cat;
+    selectedCat = cat;
+    notifyListeners();
+  }
+  void removeCat(CatProfile cat) {
+    _cats.remove(cat);
     notifyListeners();
   }
 }
+
+// class InsulinRule {
+//   final String condition; // "greater" or "less"
+//   final double glucose;
+//   final int insulin;
+
+//   InsulinRule({
+//     required this.condition,
+//     required this.glucose,
+//     required this.insulin,
+//   });
+
+//   Map<String, dynamic> toJson() => {
+//         'condition': condition,
+//         'glucose': glucose,
+//         'insulin': insulin,
+//       };
+
+//   factory InsulinRule.fromJson(Map<String, dynamic> json) => InsulinRule(
+//         condition: json['condition'],
+//         glucose: (json['glucose'] as num).toDouble(),
+//         insulin: json['insulin'] as int,
+//       );
+// }
