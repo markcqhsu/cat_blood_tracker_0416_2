@@ -4,6 +4,8 @@ import '../../providers/cat_provider.dart';
 import '../../models/cat_profile.dart';
 
 class PetSettingsScreen extends StatefulWidget {
+  const PetSettingsScreen({super.key});
+
   @override
   _PetSettingsScreenState createState() => _PetSettingsScreenState();
 }

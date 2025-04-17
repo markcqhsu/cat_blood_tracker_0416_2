@@ -1,29 +1,31 @@
-// import 'package:flutter/foundation.dart';
-
 class InsulinRule {
-  final String comparison;
-  final double glucose;
-  final int insulin;
+  final String comparisonType; // e.g., 'lessThan', 'greaterThanOrEqual', 'between'
+  final double glucoseStart;
+  final double? glucoseEnd;
+  final double insulin;
 
   InsulinRule({
-    required this.comparison,
-    required this.glucose,
+    required this.comparisonType,
+    required this.glucoseStart,
+    this.glucoseEnd,
     required this.insulin,
   });
 
   factory InsulinRule.fromJson(Map<String, dynamic> json) {
     return InsulinRule(
-      comparison: json['comparison'],
-      glucose: json['glucose'] != null ? (json['glucose'] as num).toDouble() : 0.0,
-      insulin: (json['insulin'] is int)
-          ? json['insulin'] as int
-          : (json['insulin'] as num?)?.round() ?? 0,
+      comparisonType: json['comparisonType'],
+      glucoseStart: (json['glucoseStart'] as num).toDouble(),
+      glucoseEnd: json['glucoseEnd'] != null ? (json['glucoseEnd'] as num).toDouble() : null,
+      insulin: (json['insulin'] as num).toDouble(),
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'comparison': comparison,
-    'glucose': glucose,
-    'insulin': insulin,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      'comparisonType': comparisonType,
+      'glucoseStart': glucoseStart,
+      'glucoseEnd': glucoseEnd,
+      'insulin': insulin,
+    };
+  }
 }

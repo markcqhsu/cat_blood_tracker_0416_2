@@ -4,25 +4,58 @@ import '../../models/insulin_rule.dart';
 import '../../providers/settings_provider.dart';
 
 class InsulinSettingsScreen extends StatefulWidget {
+  const InsulinSettingsScreen({super.key});
+
   @override
   State<InsulinSettingsScreen> createState() => _InsulinSettingsScreenState();
 }
 
 class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _glucoseController = TextEditingController();
+  final TextEditingController _glucoseStartController = TextEditingController();
+  final TextEditingController _glucoseEndController = TextEditingController();
   final TextEditingController _insulinController = TextEditingController();
-  String _condition = 'less';
+  String _comparisonType = 'lessThan';
 
   void _addRule() {
     if (_formKey.currentState!.validate()) {
-      final glucose = double.tryParse(_glucoseController.text) ?? 0;
+      final glucoseStart = double.tryParse(_glucoseStartController.text) ?? 0;
+      final glucoseEnd = _glucoseEndController.text.isNotEmpty
+          ? double.tryParse(_glucoseEndController.text)
+          : null;
       final insulin = double.tryParse(_insulinController.text) ?? 0;
-      Provider.of<SettingsProvider>(context, listen: false).addInsulinRule(
-        comparison: _condition,
-        bgStart: glucose,
+
+      final rule = InsulinRule(
+        comparisonType: _comparisonType,
+        glucoseStart: glucoseStart,
+        glucoseEnd: glucoseEnd,
         insulin: insulin,
       );
+
+      Provider.of<SettingsProvider>(context, listen: false).addInsulinRule(rule);
+
+      _glucoseStartController.clear();
+      _glucoseEndController.clear();
+      _insulinController.clear();
+    }
+  }
+
+  String _comparisonSymbol(String type) {
+    switch (type) {
+      case 'lessThan':
+        return '<';
+      case 'lessThanOrEqual':
+        return '≤';
+      case 'equal':
+        return '=';
+      case 'greaterThanOrEqual':
+        return '≥';
+      case 'greaterThan':
+        return '>';
+      case 'between':
+        return '↔';
+      default:
+        return '?';
     }
   }
 
@@ -44,20 +77,33 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
               child: Row(
                 children: [
                   DropdownButton<String>(
-                    value: _condition,
+                    value: _comparisonType,
                     items: const [
-                      DropdownMenuItem(value: 'less', child: Text('<')),
-                      DropdownMenuItem(value: 'greater', child: Text('>')),
+                      DropdownMenuItem(value: 'lessThan', child: Text('<')),
+                      DropdownMenuItem(value: 'lessThanOrEqual', child: Text('≤')),
+                      DropdownMenuItem(value: 'equal', child: Text('=')),
+                      DropdownMenuItem(value: 'greaterThanOrEqual', child: Text('≥')),
+                      DropdownMenuItem(value: 'greaterThan', child: Text('>')),
+                      DropdownMenuItem(value: 'between', child: Text('↔')),
                     ],
-                    onChanged: (val) => setState(() => _condition = val!),
+                    onChanged: (val) => setState(() => _comparisonType = val!),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextFormField(
-                      controller: _glucoseController,
-                      decoration: const InputDecoration(labelText: 'Glucose'),
+                      controller: _glucoseStartController,
+                      decoration: const InputDecoration(labelText: 'Glucose From'),
                       keyboardType: TextInputType.number,
-                      validator: (v) => v == null || v.isEmpty ? 'Enter value' : null,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Enter value' : null,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _glucoseEndController,
+                      decoration: const InputDecoration(labelText: 'To (optional)'),
+                      keyboardType: TextInputType.number,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -66,13 +112,14 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                       controller: _insulinController,
                       decoration: const InputDecoration(labelText: 'Insulin'),
                       keyboardType: TextInputType.number,
-                      validator: (v) => v == null || v.isEmpty ? 'Enter value' : null,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Enter value' : null,
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.add),
                     onPressed: _addRule,
-                  )
+                  ),
                 ],
               ),
             ),
@@ -82,14 +129,19 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                 itemCount: rules.length,
                 itemBuilder: (context, index) {
                   final rule = rules[index];
+                  final range = rule.glucoseEnd != null
+                      ? '${rule.glucoseStart}–${rule.glucoseEnd}'
+                      : '${rule.glucoseStart}';
                   return Card(
                     child: ListTile(
                       title: Text(
-                        '${rule.comparison == 'less' ? '<' : '>'} ${rule.glucose} → ${rule.insulin}U',
+                        '${_comparisonSymbol(rule.comparisonType)} $range → ${rule.insulin}U',
                       ),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete),
-                        onPressed: () => context.read<SettingsProvider>().removeInsulinRule(rules[index].toJson()),
+                        onPressed: () => context
+                            .read<SettingsProvider>()
+                            .removeInsulinRule(rule.toJson()),
                       ),
                     ),
                   );

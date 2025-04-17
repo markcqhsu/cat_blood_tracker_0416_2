@@ -55,6 +55,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<bool> _confirmDelete(BuildContext context, GlucoseEntry entry) async {
+    if (!mounted) return false;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -77,6 +78,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   void _editEntry(BuildContext context, GlucoseEntry entry) {
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => EntryScreen(entryToEdit: entry),

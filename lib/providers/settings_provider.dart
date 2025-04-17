@@ -1,5 +1,5 @@
-// import 'package:cat_blood_tracker_0416/models/insulin_rule.dart';
 import 'package:flutter/material.dart';
+import 'package:cat_blood_tracker_0416/models/insulin_rule.dart';
 
 class SettingsProvider extends ChangeNotifier {
   final List<Map<String, dynamic>> _insulinRules = [];
@@ -22,18 +22,8 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addInsulinRule({
-    required String comparison,
-    required double bgStart,
-    double? bgEnd,
-    required double insulin,
-  }) {
-    _insulinRules.add({
-      'comparison': comparison,
-      'bgStart': bgStart,
-      'bgEnd': bgEnd,
-      'insulin': insulin,
-    });
+  void addInsulinRule(InsulinRule rule) {
+    _insulinRules.add(rule.toJson());
     notifyListeners();
   }
 
@@ -44,14 +34,19 @@ class SettingsProvider extends ChangeNotifier {
 
   double? getAutoInsulinDose(int bgValue) {
     for (final rule in _insulinRules) {
-      if (rule['comparison'] == '<' && bgValue < rule['bgStart']) {
-        return rule['insulin'];
+      final comparisonType = rule['comparisonType'];
+      final double start = rule['glucoseStart'];
+      final double? end = rule['glucoseEnd'];
+      final double insulin = rule['insulin'];
+
+      if (comparisonType == 'lessThan' && bgValue < start) {
+        return insulin;
       }
-      if (rule['comparison'] == '>' &&
-          bgValue >= rule['bgStart'] &&
-          rule['bgEnd'] != null &&
-          bgValue <= rule['bgEnd']) {
-        return rule['insulin'];
+      if (comparisonType == 'greaterThanOrEqual' && bgValue >= start && (end == null || bgValue <= end)) {
+        return insulin;
+      }
+      if (comparisonType == 'between' && end != null && bgValue >= start && bgValue <= end) {
+        return insulin;
       }
     }
     return null;

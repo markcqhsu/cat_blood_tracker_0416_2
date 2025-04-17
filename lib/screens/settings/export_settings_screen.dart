@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 
 class ExportSettingsScreen extends StatelessWidget {
+  const ExportSettingsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

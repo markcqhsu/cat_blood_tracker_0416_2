@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/cat_profile.dart';
 
 class CatProvider with ChangeNotifier {
-  List<CatProfile> _cats = [];
+  final List<CatProfile> _cats = [];
   CatProfile? selectedCat;
 
   List<CatProfile> get cats => _cats;

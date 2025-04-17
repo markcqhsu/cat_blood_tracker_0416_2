@@ -43,12 +43,37 @@ class _EntryScreenState extends State<EntryScreen> {
     final bg = int.tryParse(_bgController.text);
     if (bg != null) {
       final settings = context.read<SettingsProvider>();
-      final List<InsulinRule> rules = settings.insulinRules.map((e) => InsulinRule.fromJson(e)).toList();
-      for (final InsulinRule rule in rules) {
-        if ((rule.comparison == 'less' && bg < rule.glucose) ||
-            (rule.comparison == 'greater' && bg > rule.glucose)) {
-          if (_insulinValue != rule.insulin.toDouble()) {
-            setState(() => _insulinValue = rule.insulin.toDouble());
+      final List<InsulinRule> rules =
+          settings.insulinRules.map((e) => InsulinRule.fromJson(e)).toList();
+
+      for (final rule in rules) {
+        bool match = false;
+        switch (rule.comparisonType) {
+          case 'lessThan':
+            match = bg < rule.glucoseStart;
+            break;
+          case 'lessThanOrEqual':
+            match = bg <= rule.glucoseStart;
+            break;
+          case 'equal':
+            match = bg == rule.glucoseStart;
+            break;
+          case 'greaterThanOrEqual':
+            match = bg >= rule.glucoseStart;
+            break;
+          case 'greaterThan':
+            match = bg > rule.glucoseStart;
+            break;
+          case 'between':
+            match = rule.glucoseEnd != null &&
+                bg >= rule.glucoseStart &&
+                bg <= rule.glucoseEnd!;
+            break;
+        }
+
+        if (match) {
+          if (_insulinValue != rule.insulin) {
+            setState(() => _insulinValue = rule.insulin);
           }
           return;
         }
