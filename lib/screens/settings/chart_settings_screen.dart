@@ -1,0 +1,14 @@
+// chart_settings_screen.dart
+import 'package:flutter/material.dart';
+
+class ChartSettingsScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Chart Settings'),
+      ),
+      body: Center(child: Text('Chart Settings Content')),
+    );
+  }
+}

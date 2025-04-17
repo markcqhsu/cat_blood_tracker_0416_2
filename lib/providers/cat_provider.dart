@@ -1,23 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
-
-class CatProfile {
-  final String id;
-  final String name;
-  final double? weight;
-  final String? breed;
-  final int? age;
-  final String? avatarUrl;
-
-  CatProfile({
-    required this.id,
-    required this.name,
-    this.weight,
-    this.breed,
-    this.age,
-    this.avatarUrl,
-  });
-}
+import 'package:cat_blood_tracker_0416/models/cat.dart';
 
 class CatProvider extends ChangeNotifier {
   final List<CatProfile> _cats = [];
@@ -26,29 +9,26 @@ class CatProvider extends ChangeNotifier {
   List<CatProfile> get cats => _cats;
   CatProfile? get selectedCat => _selectedCat;
 
-  void addCat(String name, {double? weight, String? breed, int? age, String? avatarUrl}) {
-    final newCat = CatProfile(
-      id: const Uuid().v4(),
-      name: name,
-      weight: weight,
-      breed: breed,
-      age: age,
-      avatarUrl: avatarUrl,
-    );
-    _cats.add(newCat);
+  void addCat(CatProfile cat) {
+    _cats.add(cat);
     notifyListeners();
   }
 
-  void selectCat(CatProfile cat) {
-    _selectedCat = cat;
-    notifyListeners();
+  void updateCat(CatProfile cat) {
+    final index = _cats.indexWhere((c) => c.id == cat.id);
+    if (index != -1) {
+      _cats[index] = cat;
+      notifyListeners();
+    }
   }
 
   void removeCat(CatProfile cat) {
-    _cats.remove(cat);
-    if (_selectedCat?.id == cat.id) {
-      _selectedCat = null;
-    }
+    _cats.removeWhere((c) => c.id == cat.id);
+    notifyListeners();
+  }
+
+  void selectCat(CatProfile? cat) {
+    _selectedCat = cat;
     notifyListeners();
   }
 }
