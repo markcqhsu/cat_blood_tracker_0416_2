@@ -68,6 +68,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
     );
     if (confirmed == true) {
+      if (!mounted) return false;
       context.read<EntryProvider>().deleteEntry(entry);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Entry deleted.')),

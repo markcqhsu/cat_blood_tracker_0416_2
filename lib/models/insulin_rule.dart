@@ -1,19 +1,19 @@
-class InsulinRule {
-  final String comparisonType; // e.g., 'lessThan', 'greaterThanOrEqual', 'between'
+class InsulinRuleModel {
+  final String comparisonType;
   final double glucoseStart;
   final double? glucoseEnd;
   final double insulin;
 
-  InsulinRule({
+  InsulinRuleModel({
     required this.comparisonType,
     required this.glucoseStart,
     this.glucoseEnd,
     required this.insulin,
   });
 
-  factory InsulinRule.fromJson(Map<String, dynamic> json) {
-    return InsulinRule(
-      comparisonType: json['comparisonType'],
+  factory InsulinRuleModel.fromJson(Map<String, dynamic> json) {
+    return InsulinRuleModel(
+      comparisonType: json['comparisonType'] as String,
       glucoseStart: (json['glucoseStart'] as num).toDouble(),
       glucoseEnd: json['glucoseEnd'] != null ? (json['glucoseEnd'] as num).toDouble() : null,
       insulin: (json['insulin'] as num).toDouble(),

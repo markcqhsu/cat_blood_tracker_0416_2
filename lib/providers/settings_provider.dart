@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cat_blood_tracker_0416/models/insulin_rule.dart';
 
+
 class SettingsProvider extends ChangeNotifier {
-  final List<Map<String, dynamic>> _insulinRules = [];
+  final List<InsulinRuleModel> _insulinRules = [];
   final List<Map<String, dynamic>> _limitRanges = [];
   double _lowerLimit = 70;
   double _upperLimit = 180;
 
-  List<Map<String, dynamic>> get insulinRules => _insulinRules;
+  List<InsulinRuleModel> get insulinRules => _insulinRules;
   List<Map<String, dynamic>> get limitRanges => _limitRanges;
   double get lowerLimit => _lowerLimit;
   double get upperLimit => _upperLimit;
@@ -22,31 +23,43 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addInsulinRule(InsulinRule rule) {
-    _insulinRules.add(rule.toJson());
+  void addInsulinRule(InsulinRuleModel rule) {
+    _insulinRules.add(rule);
     notifyListeners();
   }
 
-  void removeInsulinRule(Map<String, dynamic> rule) {
-    _insulinRules.remove(rule);
+  void removeInsulinRule(InsulinRuleModel rule) {
+    _insulinRules.removeWhere((r) =>
+      r.comparisonType == rule.comparisonType &&
+      r.glucoseStart == rule.glucoseStart &&
+      r.glucoseEnd == rule.glucoseEnd &&
+      r.insulin == rule.insulin
+    );
     notifyListeners();
+  }
+  
+  void updateInsulinRule(int index, InsulinRuleModel newRule) {
+    if (index >= 0 && index < _insulinRules.length) {
+      _insulinRules[index] = newRule;
+      notifyListeners();
+    }
   }
 
   double? getAutoInsulinDose(int bgValue) {
     for (final rule in _insulinRules) {
-      final comparisonType = rule['comparisonType'];
-      final double start = rule['glucoseStart'];
-      final double? end = rule['glucoseEnd'];
-      final double insulin = rule['insulin'];
-
-      if (comparisonType == 'lessThan' && bgValue < start) {
-        return insulin;
+      if (rule.comparisonType == 'lessThan' && bgValue < rule.glucoseStart) {
+        return rule.insulin;
       }
-      if (comparisonType == 'greaterThanOrEqual' && bgValue >= start && (end == null || bgValue <= end)) {
-        return insulin;
+      if (rule.comparisonType == 'greaterThanOrEqual' &&
+          bgValue >= rule.glucoseStart &&
+          (rule.glucoseEnd == null || bgValue <= rule.glucoseEnd!)) {
+        return rule.insulin;
       }
-      if (comparisonType == 'between' && end != null && bgValue >= start && bgValue <= end) {
-        return insulin;
+      if (rule.comparisonType == 'between' &&
+          rule.glucoseEnd != null &&
+          bgValue >= rule.glucoseStart &&
+          bgValue <= rule.glucoseEnd!) {
+        return rule.insulin;
       }
     }
     return null;

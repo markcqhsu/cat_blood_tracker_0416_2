@@ -7,10 +7,10 @@ class PetSettingsScreen extends StatefulWidget {
   const PetSettingsScreen({super.key});
 
   @override
-  _PetSettingsScreenState createState() => _PetSettingsScreenState();
+  PetSettingsScreenState createState() => PetSettingsScreenState();
 }
 
-class _PetSettingsScreenState extends State<PetSettingsScreen> {
+ class PetSettingsScreenState extends State<PetSettingsScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();

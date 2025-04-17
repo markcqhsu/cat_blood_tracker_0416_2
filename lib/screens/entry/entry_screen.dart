@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../models/glucose_entry.dart';
 import '../../providers/entry_provider.dart';
 import '../../providers/settings_provider.dart';
-import '../../models/insulin_rule.dart';
+import '../../models/insulin_rule.dart' as model;
 import '../../providers/cat_provider.dart';
 // import '../../models/cat.dart';
 
@@ -40,44 +40,24 @@ class _EntryScreenState extends State<EntryScreen> {
   }
 
   void _autoFillInsulin() {
-    final bg = int.tryParse(_bgController.text);
+    final bg = double.tryParse(_bgController.text);
     if (bg != null) {
       final settings = context.read<SettingsProvider>();
-      final List<InsulinRule> rules =
-          settings.insulinRules.map((e) => InsulinRule.fromJson(e)).toList();
+      final List<model.InsulinRuleModel> rules = settings.insulinRules
+          .map((e) => e is Map<String, dynamic>
+              ? model.InsulinRuleModel.fromJson(e as Map<String, dynamic>)
+              : e)
+          .toList()
+        ..sort((a, b) => a.glucoseStart.compareTo(b.glucoseStart));
 
       for (final rule in rules) {
-        bool match = false;
-        switch (rule.comparisonType) {
-          case 'lessThan':
-            match = bg < rule.glucoseStart;
-            break;
-          case 'lessThanOrEqual':
-            match = bg <= rule.glucoseStart;
-            break;
-          case 'equal':
-            match = bg == rule.glucoseStart;
-            break;
-          case 'greaterThanOrEqual':
-            match = bg >= rule.glucoseStart;
-            break;
-          case 'greaterThan':
-            match = bg > rule.glucoseStart;
-            break;
-          case 'between':
-            match = rule.glucoseEnd != null &&
-                bg >= rule.glucoseStart &&
-                bg <= rule.glucoseEnd!;
-            break;
-        }
-
-        if (match) {
-          if (_insulinValue != rule.insulin) {
-            setState(() => _insulinValue = rule.insulin);
-          }
+        if (bg >= rule.glucoseStart && bg <= (rule.glucoseEnd as num)) {
+          setState(() => _insulinValue = rule.insulin);
           return;
         }
       }
+
+      setState(() => _insulinValue = 0);
     }
   }
 

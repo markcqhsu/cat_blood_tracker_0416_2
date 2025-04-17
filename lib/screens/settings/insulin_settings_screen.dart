@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/insulin_rule.dart';
+import '../../models/insulin_rule.dart' as model;
 import '../../providers/settings_provider.dart';
 
 class InsulinSettingsScreen extends StatefulWidget {
@@ -16,6 +16,7 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
   final TextEditingController _glucoseEndController = TextEditingController();
   final TextEditingController _insulinController = TextEditingController();
   String _comparisonType = 'lessThan';
+  int? _editingIndex;
 
   void _addRule() {
     if (_formKey.currentState!.validate()) {
@@ -23,21 +24,48 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
       final glucoseEnd = _glucoseEndController.text.isNotEmpty
           ? double.tryParse(_glucoseEndController.text)
           : null;
-      final insulin = double.tryParse(_insulinController.text) ?? 0;
+      final insulinStr = _insulinController.text;
+      if (insulinStr.isEmpty || double.tryParse(insulinStr) == null) return;
+      final insulin = double.parse(insulinStr);
 
-      final rule = InsulinRule(
+      final rule = model.InsulinRuleModel(
         comparisonType: _comparisonType,
         glucoseStart: glucoseStart,
         glucoseEnd: glucoseEnd,
         insulin: insulin,
       );
 
-      Provider.of<SettingsProvider>(context, listen: false).addInsulinRule(rule);
+      final provider = Provider.of<SettingsProvider>(context, listen: false);
+      if (_editingIndex != null && _editingIndex! < provider.insulinRules.length) {
+        provider.updateInsulinRule(_editingIndex!, rule);
+        _editingIndex = null;
+      } else {
+        provider.addInsulinRule(rule);
+      }
 
       _glucoseStartController.clear();
       _glucoseEndController.clear();
       _insulinController.clear();
     }
+  }
+
+  void _autoFillInsulin(String value) {
+    final bg = double.tryParse(value);
+    if (bg == null) return;
+
+    final rules = context.read<SettingsProvider>().insulinRules.map((e) => model.InsulinRuleModel.fromJson(e as Map<String, dynamic>)).toList();
+    rules.sort((a, b) => a.glucoseStart.compareTo(b.glucoseStart));
+
+    for (final rule in rules) {
+      final start = rule.glucoseStart;
+      final end = rule.glucoseEnd ?? double.infinity;
+      if (bg >= start && bg <= end) {
+        _insulinController.text = rule.insulin.toString();
+        return;
+      }
+    }
+
+    _insulinController.clear();
   }
 
   String _comparisonSymbol(String type) {
@@ -62,90 +90,189 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final rawRules = context.watch<SettingsProvider>().insulinRules;
-    final rules = rawRules.map((e) => InsulinRule.fromJson(e)).toList();
+    // final rules = rawRules.map((e) => model.InsulinRuleModel.fromJson(e as Map<String, dynamic>)).toList();
+    final rules = rawRules.whereType<model.InsulinRuleModel>().toList();
+    rules.sort((a, b) => a.glucoseStart.compareTo(b.glucoseStart));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Insulin Settings'),
+        title: const Text('Blood Sugar & Insulin Settings'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Form(
-              key: _formKey,
-              child: Row(
-                children: [
-                  DropdownButton<String>(
-                    value: _comparisonType,
-                    items: const [
-                      DropdownMenuItem(value: 'lessThan', child: Text('<')),
-                      DropdownMenuItem(value: 'lessThanOrEqual', child: Text('≤')),
-                      DropdownMenuItem(value: 'equal', child: Text('=')),
-                      DropdownMenuItem(value: 'greaterThanOrEqual', child: Text('≥')),
-                      DropdownMenuItem(value: 'greaterThan', child: Text('>')),
-                      DropdownMenuItem(value: 'between', child: Text('↔')),
-                    ],
-                    onChanged: (val) => setState(() => _comparisonType = val!),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _glucoseStartController,
-                      decoration: const InputDecoration(labelText: 'Glucose From'),
-                      keyboardType: TextInputType.number,
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'Enter value' : null,
+            // Rule Setup Card
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Rule Setup',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _glucoseEndController,
-                      decoration: const InputDecoration(labelText: 'To (optional)'),
-                      keyboardType: TextInputType.number,
+                    const SizedBox(height: 12),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(minWidth: double.infinity),
+                            child: Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              children: [
+                                SizedBox(
+                                  width: 150,
+                                  child: TextFormField(
+                                    controller: _glucoseStartController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Min Glucose',
+                                      hintText: 'e.g. 201',
+                                    ),
+                                    validator: (v) {
+                                      if (v == null || v.isEmpty) return 'Enter value';
+                                      if (double.tryParse(v) == null) return 'Enter a valid number';
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 150,
+                                  child: TextFormField(
+                                    controller: _glucoseEndController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Max Glucose',
+                                      hintText: 'e.g. 300',
+                                    ),
+                                    validator: (v) {
+                                      if (v == null || v.isEmpty) return 'Enter value';
+                                      if (double.tryParse(v) == null) return 'Enter a valid number';
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 150,
+                                  child: TextFormField(
+                                    controller: _insulinController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Insulin Dose',
+                                      hintText: 'e.g. 1',
+                                    ),
+                                    validator: (v) {
+                                      if (v == null || v.isEmpty) return 'Enter value';
+                                      if (double.tryParse(v) == null) return 'Enter a valid number';
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                ElevatedButton.icon(
+                                  onPressed: _addRule,
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Save'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _insulinController,
-                      decoration: const InputDecoration(labelText: 'Insulin'),
-                      keyboardType: TextInputType.number,
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'Enter value' : null,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: _addRule,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: rules.length,
-                itemBuilder: (context, index) {
-                  final rule = rules[index];
-                  final range = rule.glucoseEnd != null
-                      ? '${rule.glucoseStart}–${rule.glucoseEnd}'
-                      : '${rule.glucoseStart}';
-                  return Card(
-                    child: ListTile(
-                      title: Text(
-                        '${_comparisonSymbol(rule.comparisonType)} $range → ${rule.insulin}U',
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () => context
-                            .read<SettingsProvider>()
-                            .removeInsulinRule(rule.toJson()),
-                      ),
+
+            // Existing Rules Card
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Existing Rules',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                  );
-                },
+                    const SizedBox(height: 12),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: rules.length,
+                      itemBuilder: (context, index) {
+                        final rule = rules[index];
+                        final range = rule.glucoseEnd != null
+                            ? '${rule.glucoseStart.toInt()} - ${rule.glucoseEnd!.toInt()}'
+                            : '${rule.glucoseStart.toInt()}';
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          child: ListTile(
+                            onTap: () {
+                              setState(() {
+                                _glucoseStartController.text = rule.glucoseStart.toString();
+                                _glucoseEndController.text = rule.glucoseEnd?.toString() ?? '';
+                                _insulinController.text = rule.insulin.toString();
+                                _comparisonType = 'between'; // default assumption
+                                _editingIndex = index;
+                              });
+                            },
+                            title: Text('Insulin Dose: ${rule.insulin.toInt()}U'),
+                            leading: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade100,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                rule.glucoseEnd != null
+                                    ? '${rule.glucoseStart.toInt()} - ${rule.glucoseEnd!.toInt()} mg/dL'
+                                    : '${rule.glucoseStart.toInt()} mg/dL',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                context.read<SettingsProvider>().removeInsulinRule(rule);
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Instructions Card
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Instructions',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 12),
+                    Text('• Fill in the glucose range (min to max) and corresponding insulin dose.'),
+                    Text('• You can set multiple rules to cover various glucose levels.'),
+                    Text('• To delete a rule, tap the trash icon on the right.'),
+                  ],
+                ),
               ),
             ),
           ],
