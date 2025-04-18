@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/chart_settings_provider.dart';
-import '../../models/chart_limit.dart';
+// import '../../models/chart_limit.dart';
 import '../../providers/cat_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -214,7 +214,7 @@ class _ChartSettingsScreenState extends State<ChartSettingsScreen> {
                           background: Container(color: Colors.red),
                           child: Card(
                             child: ListTile(
-                              title: Text('$catName'),
+                              title: Text(catName),
                               subtitle: Row(
                                 children: [
                                   Icon(

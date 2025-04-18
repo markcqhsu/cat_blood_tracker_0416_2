@@ -3,7 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../providers/entry_provider.dart';
-import '../../providers/settings_provider.dart';
+// import '../../providers/settings_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../providers/cat_provider.dart';
 import '../../providers/chart_settings_provider.dart';
@@ -59,7 +59,7 @@ class _ChartScreenState extends State<ChartScreen> {
   @override
   Widget build(BuildContext context) {
     final entries = context.watch<EntryProvider>().entries;
-    final settings = context.watch<SettingsProvider>();
+    // final settings = context.watch<SettingsProvider>();
     final cats = context.watch<CatProvider>().cats;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
@@ -204,8 +204,10 @@ class _ChartScreenState extends State<ChartScreen> {
                             interval: 1,
                             getTitlesWidget: (value, meta) {
                               final index = value.toInt();
-                              if (index < 0 || index >= filteredEntries.length)
+                              if (index < 0 ||
+                                  index >= filteredEntries.length) {
                                 return const SizedBox();
+                              }
                               final date = filteredEntries[index].dateTime;
                               return SideTitleWidget(
                                 axisSide: meta.axisSide,

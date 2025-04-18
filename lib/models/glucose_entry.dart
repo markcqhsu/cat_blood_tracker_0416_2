@@ -23,7 +23,8 @@ class GlucoseEntry {
       dateTime: DateTime.parse(json['dateTime']),
       bloodGlucose: json['bloodGlucose'],
       insulinDose: json['insulinDose'].toDouble(),
-      weight: json['weight'] != null ? (json['weight'] as num).toDouble() : null,
+      weight:
+          json['weight'] != null ? (json['weight'] as num).toDouble() : null,
       catID: json['catID'],
     );
   }
@@ -38,4 +39,10 @@ class GlucoseEntry {
       'catID': catID,
     };
   }
+
+  DateTime get timestamp => dateTime;
+
+  String get catId => catID;
+
+  double get insulin => insulinDose;
 }

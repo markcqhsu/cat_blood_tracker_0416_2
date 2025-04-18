@@ -73,10 +73,10 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
               (e) => model.InsulinRuleModel.fromJson(e as Map<String, dynamic>),
             )
             .toList();
-    rules.sort((a, b) => a.glucoseStart!.compareTo(b.glucoseStart!));
+    rules.sort((a, b) => a.glucoseStart.compareTo(b.glucoseStart));
 
     for (final rule in rules) {
-      final start = rule.glucoseStart!;
+      final start = rule.glucoseStart;
       final end = rule.glucoseEnd ?? double.infinity;
       if (bg >= start && bg <= end) {
         _insulinController.text = rule.insulin.toString();
@@ -109,7 +109,7 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final cats = context.watch<CatProvider>().cats;
-    if (cats.isEmpty)
+    if (cats.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -121,6 +121,7 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
           ),
         ),
       );
+    }
 
     final rawRules = context.watch<SettingsProvider>().insulinRules;
     final rules =
@@ -130,15 +131,12 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                 return model.InsulinRuleModel.fromJson(
                   e as Map<String, dynamic>,
                 );
-              } else if (e is model.InsulinRuleModel) {
+              } else
                 return e;
-              } else {
-                throw Exception('Unsupported insulin rule format');
-              }
             })
             .where((rule) => rule.catId == _selectedCatId)
             .toList();
-    rules.sort((a, b) => a.glucoseStart!.compareTo(b.glucoseStart!));
+    rules.sort((a, b) => a.glucoseStart.compareTo(b.glucoseStart));
 
     return Scaffold(
       appBar: AppBar(
@@ -234,10 +232,12 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                                           'Enter Blood Glucose',
                                     ),
                                     validator: (v) {
-                                      if (v == null || v.isEmpty)
+                                      if (v == null || v.isEmpty) {
                                         return 'Enter value';
-                                      if (double.tryParse(v) == null)
+                                      }
+                                      if (double.tryParse(v) == null) {
                                         return 'Enter a valid number';
+                                      }
                                       return null;
                                     },
                                   ),
@@ -260,10 +260,12 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                                           'Enter Blood Glucose',
                                     ),
                                     validator: (v) {
-                                      if (v == null || v.isEmpty)
+                                      if (v == null || v.isEmpty) {
                                         return 'Enter value';
-                                      if (double.tryParse(v) == null)
+                                      }
+                                      if (double.tryParse(v) == null) {
                                         return 'Enter a valid number';
+                                      }
                                       return null;
                                     },
                                   ),
@@ -286,10 +288,12 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                                           'Insulin Dose',
                                     ),
                                     validator: (v) {
-                                      if (v == null || v.isEmpty)
+                                      if (v == null || v.isEmpty) {
                                         return 'Enter value';
-                                      if (double.tryParse(v) == null)
+                                      }
+                                      if (double.tryParse(v) == null) {
                                         return 'Enter a valid number';
+                                      }
                                       return null;
                                     },
                                   ),
@@ -339,15 +343,15 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                         final rule = rules[index];
                         final range =
                             rule.glucoseEnd != null
-                                ? '${rule.glucoseStart!.toInt()} - ${rule.glucoseEnd!.toInt()}'
-                                : '${rule.glucoseStart!.toInt()}';
+                                ? '${rule.glucoseStart.toInt()} - ${rule.glucoseEnd!.toInt()}'
+                                : '${rule.glucoseStart.toInt()}';
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 4),
                           child: ListTile(
                             onTap: () {
                               setState(() {
                                 _glucoseStartController.text =
-                                    rule.glucoseStart!.toString();
+                                    rule.glucoseStart.toString();
                                 _glucoseEndController.text =
                                     rule.glucoseEnd?.toString() ?? '';
                                 _insulinController.text =

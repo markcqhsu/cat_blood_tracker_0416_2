@@ -7,8 +7,8 @@ class ChartSettingsProvider extends ChangeNotifier {
   double _lowerLimit = 0;
   double _upperLimit = 0;
 
-  Color _lowerColor = Colors.green;
-  Color _upperColor = Colors.red;
+  final Color _lowerColor = Colors.green;
+  final Color _upperColor = Colors.red;
 
   List<ChartLimit> get all => _limits;
 

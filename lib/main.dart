@@ -9,6 +9,8 @@ import 'providers/entry_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/cat_provider.dart';
 import 'providers/chart_settings_provider.dart';
+import 'providers/backup_provider.dart';
+import 'providers/export_provider.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -26,6 +28,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => EntryProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => ChartSettingsProvider()),
+        ChangeNotifierProvider(create: (_) => BackupProvider()),
+        ChangeNotifierProvider(create: (_) => ExportProvider()),
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
@@ -227,7 +231,7 @@ Widget build(BuildContext context) {
                         background: Container(color: Colors.red),
                         child: Card(
                           child: ListTile(
-                            title: Text('$catName'),
+                            title: Text(catName),
                             subtitle: Row(
                               children: [
                                 Icon(

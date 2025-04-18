@@ -250,8 +250,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           if (value != null) {
                             if (value == 'Custom') {
                               await _selectCustomDateRange();
-                              if (_startDate == null || _endDate == null)
+                              if (_startDate == null || _endDate == null) {
                                 return;
+                              }
                             }
                             setState(() {
                               _selectedRange = value;

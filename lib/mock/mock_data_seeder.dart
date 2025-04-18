@@ -3,7 +3,6 @@ import '../models/glucose_entry.dart';
 import '../providers/cat_provider.dart';
 import '../providers/entry_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class MockDataSeeder {
   static void seed(CatProvider catProvider, EntryProvider entryProvider) {
