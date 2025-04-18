@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/insulin_rule.dart' as model;
 import '../../providers/settings_provider.dart';
 
@@ -21,9 +22,10 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
   void _addRule() {
     if (_formKey.currentState!.validate()) {
       final glucoseStart = double.tryParse(_glucoseStartController.text) ?? 0;
-      final glucoseEnd = _glucoseEndController.text.isNotEmpty
-          ? double.tryParse(_glucoseEndController.text)
-          : null;
+      final glucoseEnd =
+          _glucoseEndController.text.isNotEmpty
+              ? double.tryParse(_glucoseEndController.text)
+              : null;
       final insulinStr = _insulinController.text;
       if (insulinStr.isEmpty || double.tryParse(insulinStr) == null) return;
       final insulin = double.parse(insulinStr);
@@ -36,7 +38,8 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
       );
 
       final provider = Provider.of<SettingsProvider>(context, listen: false);
-      if (_editingIndex != null && _editingIndex! < provider.insulinRules.length) {
+      if (_editingIndex != null &&
+          _editingIndex! < provider.insulinRules.length) {
         provider.updateInsulinRule(_editingIndex!, rule);
         _editingIndex = null;
       } else {
@@ -53,11 +56,18 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
     final bg = double.tryParse(value);
     if (bg == null) return;
 
-    final rules = context.read<SettingsProvider>().insulinRules.map((e) => model.InsulinRuleModel.fromJson(e as Map<String, dynamic>)).toList();
-    rules.sort((a, b) => a.glucoseStart.compareTo(b.glucoseStart));
+    final rules =
+        context
+            .read<SettingsProvider>()
+            .insulinRules
+            .map(
+              (e) => model.InsulinRuleModel.fromJson(e as Map<String, dynamic>),
+            )
+            .toList();
+    rules.sort((a, b) => a.glucoseStart!.compareTo(b.glucoseStart!));
 
     for (final rule in rules) {
-      final start = rule.glucoseStart;
+      final start = rule.glucoseStart!;
       final end = rule.glucoseEnd ?? double.infinity;
       if (bg >= start && bg <= end) {
         _insulinController.text = rule.insulin.toString();
@@ -90,13 +100,19 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final rawRules = context.watch<SettingsProvider>().insulinRules;
-    // final rules = rawRules.map((e) => model.InsulinRuleModel.fromJson(e as Map<String, dynamic>)).toList();
-    final rules = rawRules.whereType<model.InsulinRuleModel>().toList();
-    rules.sort((a, b) => a.glucoseStart.compareTo(b.glucoseStart));
+    final rules =
+        rawRules
+            .map(
+              (e) => model.InsulinRuleModel.fromJson(e as Map<String, dynamic>),
+            )
+            .toList();
+    rules.sort((a, b) => a.glucoseStart!.compareTo(b.glucoseStart!));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Blood Sugar & Insulin Settings'),
+        title: Text(
+          AppLocalizations.of(context)?.bloodGlucose ?? 'Blood Glucose',
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -110,9 +126,13 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Rule Setup',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    Text(
+                      AppLocalizations.of(context)?.bloodGlucose ??
+                          'Blood Glucose',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Form(
@@ -121,7 +141,9 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ConstrainedBox(
-                            constraints: const BoxConstraints(minWidth: double.infinity),
+                            constraints: const BoxConstraints(
+                              minWidth: double.infinity,
+                            ),
                             child: Wrap(
                               spacing: 12,
                               runSpacing: 12,
@@ -131,13 +153,23 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                                   child: TextFormField(
                                     controller: _glucoseStartController,
                                     keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Min Glucose',
-                                      hintText: 'e.g. 201',
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          AppLocalizations.of(
+                                            context,
+                                          )?.bloodGlucose ??
+                                          'Blood Glucose',
+                                      hintText:
+                                          AppLocalizations.of(
+                                            context,
+                                          )?.enterBloodGlucose ??
+                                          'Enter Blood Glucose',
                                     ),
                                     validator: (v) {
-                                      if (v == null || v.isEmpty) return 'Enter value';
-                                      if (double.tryParse(v) == null) return 'Enter a valid number';
+                                      if (v == null || v.isEmpty)
+                                        return 'Enter value';
+                                      if (double.tryParse(v) == null)
+                                        return 'Enter a valid number';
                                       return null;
                                     },
                                   ),
@@ -147,13 +179,23 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                                   child: TextFormField(
                                     controller: _glucoseEndController,
                                     keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Max Glucose',
-                                      hintText: 'e.g. 300',
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          AppLocalizations.of(
+                                            context,
+                                          )?.bloodGlucose ??
+                                          'Blood Glucose',
+                                      hintText:
+                                          AppLocalizations.of(
+                                            context,
+                                          )?.enterBloodGlucose ??
+                                          'Enter Blood Glucose',
                                     ),
                                     validator: (v) {
-                                      if (v == null || v.isEmpty) return 'Enter value';
-                                      if (double.tryParse(v) == null) return 'Enter a valid number';
+                                      if (v == null || v.isEmpty)
+                                        return 'Enter value';
+                                      if (double.tryParse(v) == null)
+                                        return 'Enter a valid number';
                                       return null;
                                     },
                                   ),
@@ -163,13 +205,23 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                                   child: TextFormField(
                                     controller: _insulinController,
                                     keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Insulin Dose',
-                                      hintText: 'e.g. 1',
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          AppLocalizations.of(
+                                            context,
+                                          )?.insulinDose ??
+                                          'Insulin Dose',
+                                      hintText:
+                                          AppLocalizations.of(
+                                            context,
+                                          )?.insulinDose ??
+                                          'Insulin Dose',
                                     ),
                                     validator: (v) {
-                                      if (v == null || v.isEmpty) return 'Enter value';
-                                      if (double.tryParse(v) == null) return 'Enter a valid number';
+                                      if (v == null || v.isEmpty)
+                                        return 'Enter value';
+                                      if (double.tryParse(v) == null)
+                                        return 'Enter a valid number';
                                       return null;
                                     },
                                   ),
@@ -177,7 +229,10 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                                 ElevatedButton.icon(
                                   onPressed: _addRule,
                                   icon: const Icon(Icons.add),
-                                  label: const Text('Save'),
+                                  label: Text(
+                                    AppLocalizations.of(context)?.saveRecord ??
+                                        'Save Record',
+                                  ),
                                 ),
                               ],
                             ),
@@ -199,9 +254,13 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Existing Rules',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    Text(
+                      AppLocalizations.of(context)?.recentRecords ??
+                          'Recent Records',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     ListView.builder(
@@ -210,24 +269,34 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                       itemCount: rules.length,
                       itemBuilder: (context, index) {
                         final rule = rules[index];
-                        final range = rule.glucoseEnd != null
-                            ? '${rule.glucoseStart.toInt()} - ${rule.glucoseEnd!.toInt()}'
-                            : '${rule.glucoseStart.toInt()}';
+                        final range =
+                            rule.glucoseEnd != null
+                                ? '${rule.glucoseStart!.toInt()} - ${rule.glucoseEnd!.toInt()}'
+                                : '${rule.glucoseStart!.toInt()}';
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 4),
                           child: ListTile(
                             onTap: () {
                               setState(() {
-                                _glucoseStartController.text = rule.glucoseStart.toString();
-                                _glucoseEndController.text = rule.glucoseEnd?.toString() ?? '';
-                                _insulinController.text = rule.insulin.toString();
-                                _comparisonType = 'between'; // default assumption
+                                _glucoseStartController.text =
+                                    rule.glucoseStart!.toString();
+                                _glucoseEndController.text =
+                                    rule.glucoseEnd?.toString() ?? '';
+                                _insulinController.text =
+                                    rule.insulin.toString();
+                                _comparisonType =
+                                    'between'; // default assumption
                                 _editingIndex = index;
                               });
                             },
-                            title: Text('Insulin Dose: ${rule.insulin.toInt()}U'),
+                            title: Text(
+                              '${AppLocalizations.of(context)?.insulinDose ?? 'Insulin Dose'}: ${rule.insulin.toInt()}U',
+                            ),
                             leading: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.blue.shade100,
                                 borderRadius: BorderRadius.circular(20),
@@ -242,7 +311,9 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                             trailing: IconButton(
                               icon: const Icon(Icons.delete),
                               onPressed: () {
-                                context.read<SettingsProvider>().removeInsulinRule(rule);
+                                context
+                                    .read<SettingsProvider>()
+                                    .removeInsulinRule(rule);
                               },
                             ),
                           ),
@@ -265,12 +336,21 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                   children: const [
                     Text(
                       'Instructions',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 12),
-                    Text('• Fill in the glucose range (min to max) and corresponding insulin dose.'),
-                    Text('• You can set multiple rules to cover various glucose levels.'),
-                    Text('• To delete a rule, tap the trash icon on the right.'),
+                    Text(
+                      '• Fill in the glucose range (min to max) and corresponding insulin dose.',
+                    ),
+                    Text(
+                      '• You can set multiple rules to cover various glucose levels.',
+                    ),
+                    Text(
+                      '• To delete a rule, tap the trash icon on the right.',
+                    ),
                   ],
                 ),
               ),
