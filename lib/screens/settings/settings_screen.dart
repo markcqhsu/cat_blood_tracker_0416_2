@@ -8,6 +8,7 @@ import 'package:cat_blood_tracker_0416/screens/settings/insulin_settings_screen.
 import 'package:cat_blood_tracker_0416/screens/settings/chart_settings_screen.dart';
 import 'package:cat_blood_tracker_0416/screens/settings/export_settings_screen.dart';
 import 'package:cat_blood_tracker_0416/screens/settings/import_settings_screen.dart';
+// import 'package:cat_blood_tracker_0416/screens/settings/chart_settings_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -32,7 +33,9 @@ class SettingsScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => PetSettingsScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => PetSettingsScreen(),
+                    ),
                   );
                 },
                 child: Column(
@@ -41,7 +44,13 @@ class SettingsScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
-                        Text('Pet Info Settings', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        Text(
+                          'Pet Info Settings',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         Icon(Icons.chevron_right),
                       ],
                     ),
@@ -56,7 +65,9 @@ class SettingsScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => InsulinSettingsScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => InsulinSettingsScreen(),
+                    ),
                   );
                 },
                 child: Column(
@@ -65,7 +76,13 @@ class SettingsScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
-                        Text('Insulin Settings', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        Text(
+                          'Insulin Settings',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         Icon(Icons.chevron_right),
                       ],
                     ),
@@ -80,7 +97,9 @@ class SettingsScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ChartSettingsScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => ChartSettingsScreen(),
+                    ),
                   );
                 },
                 child: Column(
@@ -89,7 +108,13 @@ class SettingsScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
-                        Text('Chart Limit Settings', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        Text(
+                          'Chart Limit Settings',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         Icon(Icons.chevron_right),
                       ],
                     ),
@@ -104,7 +129,9 @@ class SettingsScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ExportSettingsScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => ExportSettingsScreen(),
+                    ),
                   );
                 },
                 child: Column(
@@ -113,7 +140,13 @@ class SettingsScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
-                        Text('Backup & Export', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        Text(
+                          'Backup & Export',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         Icon(Icons.chevron_right),
                       ],
                     ),
@@ -128,7 +161,9 @@ class SettingsScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ImportSettingsScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => ImportSettingsScreen(),
+                    ),
                   );
                 },
                 child: Column(
@@ -137,7 +172,13 @@ class SettingsScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
-                        Text('Import Settings', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        Text(
+                          'Import Settings',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         Icon(Icons.chevron_right),
                       ],
                     ),

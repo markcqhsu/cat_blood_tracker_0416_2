@@ -6,6 +6,7 @@ import '../../providers/entry_provider.dart';
 import '../../providers/settings_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../providers/cat_provider.dart';
+import '../../providers/chart_settings_provider.dart';
 
 class ChartScreen extends StatefulWidget {
   const ChartScreen({super.key});
@@ -86,6 +87,15 @@ class _ChartScreenState extends State<ChartScreen> {
           final data = entry.value;
           return FlSpot(index.toDouble(), data.bloodGlucose.toDouble());
         }).toList();
+
+    final chartLimits =
+        _selectedCatId == null
+            ? []
+            : context
+                .watch<ChartSettingsProvider>()
+                .limitRecords
+                .where((e) => e.catId == _selectedCatId)
+                .toList();
 
     return Center(
       child: ConstrainedBox(
@@ -178,7 +188,9 @@ class _ChartScreenState extends State<ChartScreen> {
                     LineChartData(
                       minX: 0,
                       maxX: (spots.length - 1).toDouble(),
-                      minY: 0,
+                      minY: spots
+                          .map((s) => s.y)
+                          .reduce((a, b) => a < b ? a : b),
                       maxY: (spots
                                   .map((s) => s.y)
                                   .reduce((a, b) => a > b ? a : b) +
@@ -237,33 +249,33 @@ class _ChartScreenState extends State<ChartScreen> {
                       ],
                       extraLinesData: ExtraLinesData(
                         horizontalLines: [
-                          for (var range in settings.limitRanges) ...[
+                          for (var limit in chartLimits) ...[
                             HorizontalLine(
-                              y: range['lower'],
-                              color: range['lowerColor'],
+                              y: limit.lower,
+                              color: limit.lowerColor,
                               strokeWidth: 2,
                               dashArray: [8, 4],
                               label: HorizontalLineLabel(
                                 show: true,
                                 alignment: Alignment.bottomLeft,
-                                labelResolver: (_) => 'Lower ${range['lower']}',
+                                labelResolver: (_) => 'Lower ${limit.lower}',
                                 style: TextStyle(
-                                  color: range['lowerColor'],
+                                  color: limit.lowerColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                             HorizontalLine(
-                              y: range['upper'],
-                              color: range['upperColor'],
+                              y: limit.upper,
+                              color: limit.upperColor,
                               strokeWidth: 2,
                               dashArray: [8, 4],
                               label: HorizontalLineLabel(
                                 show: true,
                                 alignment: Alignment.topLeft,
-                                labelResolver: (_) => 'Upper ${range['upper']}',
+                                labelResolver: (_) => 'Upper ${limit.upper}',
                                 style: TextStyle(
-                                  color: range['upperColor'],
+                                  color: limit.upperColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

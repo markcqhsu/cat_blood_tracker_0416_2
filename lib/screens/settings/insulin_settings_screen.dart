@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/insulin_rule.dart' as model;
 import '../../providers/settings_provider.dart';
+import '../../providers/cat_provider.dart';
 
 class InsulinSettingsScreen extends StatefulWidget {
   const InsulinSettingsScreen({super.key});
@@ -18,6 +19,13 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
   final TextEditingController _insulinController = TextEditingController();
   String _comparisonType = 'lessThan';
   int? _editingIndex;
+  String? _selectedCatId;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize _selectedCatId if needed. It remains null until a cat is selected.
+  }
 
   void _addRule() {
     if (_formKey.currentState!.validate()) {
@@ -35,6 +43,7 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
         glucoseStart: glucoseStart,
         glucoseEnd: glucoseEnd,
         insulin: insulin,
+        catId: _selectedCatId,
       );
 
       final provider = Provider.of<SettingsProvider>(context, listen: false);
@@ -99,17 +108,36 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cats = context.watch<CatProvider>().cats;
+    if (cats.isEmpty)
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Text(
+            AppLocalizations.of(context)?.pleaseAddCatFirst ??
+                'Please add a cat in settings before configuring insulin rules.',
+            style: TextStyle(fontSize: 16, color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+
     final rawRules = context.watch<SettingsProvider>().insulinRules;
     final rules =
-        rawRules.map((e) {
-          if (e is Map<String, dynamic>) {
-            return model.InsulinRuleModel.fromJson(e as Map<String, dynamic>);
-          } else if (e is model.InsulinRuleModel) {
-            return e;
-          } else {
-            throw Exception('Unsupported insulin rule format');
-          }
-        }).toList();
+        rawRules
+            .map((e) {
+              if (e is Map<String, dynamic>) {
+                return model.InsulinRuleModel.fromJson(
+                  e as Map<String, dynamic>,
+                );
+              } else if (e is model.InsulinRuleModel) {
+                return e;
+              } else {
+                throw Exception('Unsupported insulin rule format');
+              }
+            })
+            .where((rule) => rule.catId == _selectedCatId)
+            .toList();
     rules.sort((a, b) => a.glucoseStart!.compareTo(b.glucoseStart!));
 
     return Scaffold(
@@ -122,6 +150,42 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)?.selectCat ?? 'Select Cat:',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: _selectedCatId,
+                        items:
+                            cats.map((cat) {
+                              return DropdownMenuItem<String>(
+                                value: cat.id,
+                                child: Text(cat.name),
+                              );
+                            }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCatId = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             // Rule Setup Card
             Card(
               elevation: 2,

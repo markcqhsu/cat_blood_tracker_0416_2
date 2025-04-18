@@ -6,9 +6,26 @@ class CatProvider with ChangeNotifier {
   CatProfile? selectedCat;
 
   List<CatProfile> get cats => _cats;
+  String? get selectedCatId => selectedCat?.id;
+
+  CatProfile? getCatById(String id) {
+    try {
+      return _cats.firstWhere(
+        (c) => c.id == id,
+        orElse: () => throw StateError('Cat not found'),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool get hasCats => _cats.isNotEmpty;
 
   void addCat(CatProfile cat) {
     _cats.add(cat);
+    if (_cats.length == 1) {
+      selectedCat = cat;
+    }
     notifyListeners();
   }
 
@@ -29,32 +46,19 @@ class CatProvider with ChangeNotifier {
     selectedCat = cat;
     notifyListeners();
   }
+
+  void setSelectedCat(String? id) {
+    if (id == null) return;
+    final match = _cats.firstWhere(
+      (c) => c.id == id,
+      orElse: () => _cats.first,
+    );
+    selectedCat = match;
+    notifyListeners();
+  }
+
   void removeCat(CatProfile cat) {
     _cats.remove(cat);
     notifyListeners();
   }
 }
-
-// class InsulinRule {
-//   final String condition; // "greater" or "less"
-//   final double glucose;
-//   final int insulin;
-
-//   InsulinRule({
-//     required this.condition,
-//     required this.glucose,
-//     required this.insulin,
-//   });
-
-//   Map<String, dynamic> toJson() => {
-//         'condition': condition,
-//         'glucose': glucose,
-//         'insulin': insulin,
-//       };
-
-//   factory InsulinRule.fromJson(Map<String, dynamic> json) => InsulinRule(
-//         condition: json['condition'],
-//         glucose: (json['glucose'] as num).toDouble(),
-//         insulin: json['insulin'] as int,
-//       );
-// }
