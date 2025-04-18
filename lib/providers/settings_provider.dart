@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cat_blood_tracker_0416/models/insulin_rule.dart';
 
-
 class SettingsProvider extends ChangeNotifier {
   final List<InsulinRuleModel> _insulinRules = [];
   final List<Map<String, dynamic>> _limitRanges = [];
@@ -29,15 +28,16 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   void removeInsulinRule(InsulinRuleModel rule) {
-    _insulinRules.removeWhere((r) =>
-      r.comparisonType == rule.comparisonType &&
-      r.glucoseStart == rule.glucoseStart &&
-      r.glucoseEnd == rule.glucoseEnd &&
-      r.insulin == rule.insulin
+    _insulinRules.removeWhere(
+      (r) =>
+          r.comparisonType == rule.comparisonType &&
+          r.glucoseStart == rule.glucoseStart &&
+          r.glucoseEnd == rule.glucoseEnd &&
+          r.insulin == rule.insulin,
     );
     notifyListeners();
   }
-  
+
   void updateInsulinRule(int index, InsulinRuleModel newRule) {
     if (index >= 0 && index < _insulinRules.length) {
       _insulinRules[index] = newRule;
@@ -82,6 +82,22 @@ class SettingsProvider extends ChangeNotifier {
 
   void removeLimitRange(Map<String, dynamic> range) {
     _limitRanges.remove(range);
+    notifyListeners();
+  }
+
+  List<InsulinRuleModel> convertRawRules(List<dynamic> rawRules) {
+    final rules =
+        rawRules.map((e) {
+          if (e is InsulinRuleModel) return e;
+          return InsulinRuleModel.fromJson(e as Map<String, dynamic>);
+        }).toList();
+    return rules;
+  }
+
+  void setRawRules(List<dynamic> rawRules) {
+    _insulinRules
+      ..clear()
+      ..addAll(convertRawRules(rawRules));
     notifyListeners();
   }
 }

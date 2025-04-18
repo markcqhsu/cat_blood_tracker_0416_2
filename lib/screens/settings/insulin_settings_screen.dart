@@ -101,11 +101,15 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
   Widget build(BuildContext context) {
     final rawRules = context.watch<SettingsProvider>().insulinRules;
     final rules =
-        rawRules
-            .map(
-              (e) => model.InsulinRuleModel.fromJson(e as Map<String, dynamic>),
-            )
-            .toList();
+        rawRules.map((e) {
+          if (e is Map<String, dynamic>) {
+            return model.InsulinRuleModel.fromJson(e as Map<String, dynamic>);
+          } else if (e is model.InsulinRuleModel) {
+            return e;
+          } else {
+            throw Exception('Unsupported insulin rule format');
+          }
+        }).toList();
     rules.sort((a, b) => a.glucoseStart!.compareTo(b.glucoseStart!));
 
     return Scaffold(
