@@ -224,7 +224,7 @@ class _EntryScreenState extends State<EntryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Padding(
-          padding: EdgeInsets.only(top: 25.0),
+          padding: EdgeInsets.only(top: 16.0),
           child: Center(
             child: Text(
               'DM Tracker',

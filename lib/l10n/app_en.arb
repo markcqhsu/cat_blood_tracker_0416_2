@@ -91,5 +91,14 @@
   "unit": "unit",
   "mgPerDl": "mg/dL",
   "kg": "kg",
-  "latestRecords": "Recent Records"
+  "latestRecords": "Recent Records",
+  "historyTitle": "History",
+  "catFilter": "Cat",
+  "catFilterAll": "All",
+  "timeFilter": "Time",
+  "avgBg": "Avg BG",
+  "avgInsulin": "Avg Insulin",
+  "high": "High",
+  "low": "Low",
+  "today": "TODAY"
 }
