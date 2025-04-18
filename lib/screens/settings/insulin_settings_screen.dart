@@ -337,7 +337,7 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       'Instructions',
                       style: TextStyle(
@@ -347,13 +347,16 @@ class _InsulinSettingsScreenState extends State<InsulinSettingsScreen> {
                     ),
                     SizedBox(height: 12),
                     Text(
-                      '• Fill in the glucose range (min to max) and corresponding insulin dose.',
+                      AppLocalizations.of(context)?.instructionFillRange ??
+                          '• Fill in the glucose range (min to max) and corresponding insulin dose.',
                     ),
                     Text(
-                      '• You can set multiple rules to cover various glucose levels.',
+                      AppLocalizations.of(context)?.instructionMultipleRules ??
+                          '• You can set multiple rules to cover various glucose levels.',
                     ),
                     Text(
-                      '• To delete a rule, tap the trash icon on the right.',
+                      AppLocalizations.of(context)?.instructionDeleteRule ??
+                          '• To delete a rule, tap the trash icon on the right.',
                     ),
                   ],
                 ),

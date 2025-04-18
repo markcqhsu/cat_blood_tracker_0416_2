@@ -100,5 +100,10 @@
   "avgInsulin": "Avg Insulin",
   "high": "High",
   "low": "Low",
-  "today": "TODAY"
+  "today": "TODAY",
+  "filterByPet": "Pet",
+  "filterByDate": "Date",
+  "instructionFillRange": "• Fill in the glucose range (min to max) and corresponding insulin dose.",
+  "instructionMultipleRules": "• You can set multiple rules to cover various glucose levels.",
+  "instructionDeleteRule": "• To delete a rule, tap the trash icon on the right."
 }
